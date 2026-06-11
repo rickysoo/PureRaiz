@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<script src="config.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
@@ -726,8 +725,6 @@
   document.querySelectorAll('[data-card]').forEach(el => observer.observe(el));
 
   // ── Chatbot ──────────────────────────────────────────────
-  const OPENROUTER_KEY = window.PURERAIZ_CONFIG?.openrouterKey || '';
-  const CHAT_MODEL = 'openai/gpt-4o-mini';
 
   const SYSTEM_PROMPT = `You are a product assistant for PureRaiz. You ONLY answer using the exact information listed below. If a question cannot be answered from this information, say: "I don't have that information — please WhatsApp us at +601112345678 for help." Never guess, infer, or add anything not stated here. Keep replies concise and friendly.
 
@@ -845,16 +842,10 @@ Do not answer anything that is not covered by the above content. Do not make up 
     showTyping();
 
     try {
-      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENROUTER_KEY}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': window.location.href,
-          'X-Title': 'PureRaiz Assistant'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: CHAT_MODEL,
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
             ...chatHistory
