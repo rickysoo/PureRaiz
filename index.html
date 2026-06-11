@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="config.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
@@ -179,6 +180,41 @@
   /* Bottle SVG */
   .bottle-svg { position:relative;margin:0 auto; }
   .bottle-emoji { position:absolute;top:52%;left:50%;transform:translate(-50%,-50%);pointer-events:none; }
+
+  /* Chatbot */
+  .chat-fab { position:fixed;bottom:28px;right:28px;z-index:300;width:58px;height:58px;background:#1a4731;border:none;border-radius:50%;cursor:pointer;box-shadow:0 4px 20px rgba(26,71,49,0.45);display:flex;align-items:center;justify-content:center;font-size:26px;transition:transform 0.2s,box-shadow 0.2s; }
+  .chat-fab:hover { transform:scale(1.08);box-shadow:0 8px 32px rgba(26,71,49,0.55); }
+  .chat-fab .chat-fab-badge { position:absolute;top:-3px;right:-3px;background:#c9a84c;color:#1a1a1a;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center; }
+  .chat-window { position:fixed;bottom:100px;right:28px;z-index:300;width:min(380px,calc(100vw - 32px));background:#faf7f0;border-radius:20px;box-shadow:0 12px 60px rgba(0,0,0,0.2);display:flex;flex-direction:column;overflow:hidden;transform:scale(0.85) translateY(20px);transform-origin:bottom right;opacity:0;pointer-events:none;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),opacity 0.2s; }
+  .chat-window.open { transform:scale(1) translateY(0);opacity:1;pointer-events:auto; }
+  .chat-win-header { background:#1a4731;padding:14px 18px;display:flex;align-items:center;gap:12px; }
+  .chat-win-avatar { width:38px;height:38px;background:rgba(201,168,76,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0; }
+  .chat-win-info { flex:1; }
+  .chat-win-name { color:#faf7f0;font-weight:700;font-size:15px; }
+  .chat-win-status { color:#9abfad;font-size:12px;margin-top:1px; }
+  .chat-win-close { background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;font-size:20px;padding:2px 6px;border-radius:6px;transition:color 0.15s;font-family:inherit; }
+  .chat-win-close:hover { color:#fff; }
+  .chat-messages { flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;height:340px; }
+  .chat-msg { display:flex;gap:8px;align-items:flex-end;max-width:92%; }
+  .chat-msg.user { flex-direction:row-reverse;margin-left:auto; }
+  .chat-bubble { padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.55;word-break:break-word; }
+  .chat-msg.bot .chat-bubble { background:#fff;color:#1a1a1a;border-radius:4px 16px 16px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.07); }
+  .chat-msg.user .chat-bubble { background:#1a4731;color:#fff;border-radius:16px 4px 16px 16px; }
+  .chat-msg-avatar { width:28px;height:28px;background:#1a4731;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0; }
+  .chat-typing { display:flex;align-items:center;gap:5px;padding:10px 14px;background:#fff;border-radius:4px 16px 16px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.07); }
+  .chat-typing span { width:7px;height:7px;background:#aaa;border-radius:50%;animation:typing 1.2s infinite; }
+  .chat-typing span:nth-child(2) { animation-delay:0.2s; }
+  .chat-typing span:nth-child(3) { animation-delay:0.4s; }
+  @keyframes typing { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+  .chat-input-row { padding:12px 14px;border-top:1px solid #e8e0d0;display:flex;gap:8px;align-items:flex-end; }
+  .chat-input { flex:1;border:1px solid #ddd;border-radius:20px;padding:9px 14px;font-size:14px;font-family:inherit;outline:none;resize:none;background:#fff;max-height:100px;overflow-y:auto;line-height:1.4; }
+  .chat-input:focus { border-color:#1a4731; }
+  .chat-send { width:36px;height:36px;background:#1a4731;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s;color:#fff;font-size:16px; }
+  .chat-send:hover { background:#225c3e; }
+  .chat-send:disabled { background:#ccc;cursor:not-allowed; }
+  .chat-quick-btns { display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px; }
+  .chat-quick { background:#fff;border:1px solid #d4e8dc;color:#1a4731;border-radius:50px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.15s;white-space:nowrap; }
+  .chat-quick:hover { background:#e8f5ee; }
 </style>
 </head>
 <body>
@@ -533,6 +569,34 @@
   </div>
 </footer>
 
+<!-- CHATBOT -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" aria-label="Chat with us">
+  <span id="chatFabIcon">🌿</span>
+  <span class="chat-fab-badge">?</span>
+</button>
+
+<div class="chat-window" id="chatWindow">
+  <div class="chat-win-header">
+    <div class="chat-win-avatar">🌿</div>
+    <div class="chat-win-info">
+      <div class="chat-win-name">PureRaiz Assistant</div>
+      <div class="chat-win-status">Ask me anything about our oils</div>
+    </div>
+    <button class="chat-win-close" onclick="toggleChat()">×</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-quick-btns" id="chatQuickBtns">
+    <button class="chat-quick" onclick="sendQuick('Which oil is best for sleep?')">😴 Best for sleep?</button>
+    <button class="chat-quick" onclick="sendQuick('How do I use the oils?')">💡 How to use?</button>
+    <button class="chat-quick" onclick="sendQuick('What are the prices?')">💰 Prices?</button>
+    <button class="chat-quick" onclick="sendQuick('Is it safe for kids?')">👶 Safe for kids?</button>
+  </div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chatInput" placeholder="Ask about our products…" rows="1" onkeydown="chatKeydown(event)" oninput="autoResize(this)"></textarea>
+    <button class="chat-send" id="chatSendBtn" onclick="sendMessage()" title="Send">➤</button>
+  </div>
+</div>
+
 <script>
   // Products data
   const products = {
@@ -660,6 +724,175 @@
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
   }, { threshold: 0.1 });
   document.querySelectorAll('[data-card]').forEach(el => observer.observe(el));
+
+  // ── Chatbot ──────────────────────────────────────────────
+  const OPENROUTER_KEY = window.PURERAIZ_CONFIG?.openrouterKey || '';
+  const CHAT_MODEL = 'openai/gpt-4o-mini';
+
+  const SYSTEM_PROMPT = `You are a product assistant for PureRaiz. You ONLY answer using the exact information listed below. If a question cannot be answered from this information, say: "I don't have that information — please WhatsApp us at +601112345678 for help." Never guess, infer, or add anything not stated here. Keep replies concise and friendly.
+
+--- WEBSITE CONTENT ---
+
+PRODUCTS:
+
+1. Breathe KL — RM45
+   Badge: Best for Haze Season
+   Tagline: Clear your airways, reclaim your breath
+   Problem it solves: Struggling with KL haze, sinus congestion, or blocked nose
+   Description: A powerful respiratory blend that opens airways and clears congestion. Perfect for daily use during haze season or whenever your sinuses act up.
+   Key ingredients: Eucalyptus, Peppermint, Tea Tree
+   Usage: Add 3–5 drops to diffuser or inhale directly from bottle
+
+2. Sleep Ritual — RM42
+   Badge: Most Popular
+   Tagline: Drift off. Stay asleep. Wake up restored.
+   Problem it solves: Lying awake with a racing mind and can't fall asleep
+   Description: A deeply calming blend that quiets your thoughts and prepares your body for restful sleep. Trusted by thousands of Malaysians for a better night's rest.
+   Key ingredients: Lavender, Chamomile, Vetiver
+   Usage: Diffuse 30 minutes before bed or apply diluted to wrists
+
+3. Focus Flow — RM38
+   Badge: SPM Season Fave
+   Tagline: Sharp mind. Deep focus. Ready to perform.
+   Problem it solves: Can't concentrate during study sessions or work-from-home
+   Description: A crisp, energising roll-on blend that activates mental clarity and sustained focus. No jitters, just clean concentration — ready to use straight from the bottle.
+   Key ingredients: Rosemary, Peppermint, Lemon
+   Usage: Roll onto temples and wrists before study or work sessions
+
+TRUST & GENERAL INFO:
+- 100% Natural
+- No Parabens
+- Halal-Friendly
+- Free Delivery on orders RM80 and above
+- Delivery fee: RM8 for orders below RM80
+- 1,200+ Happy Customers
+- Most customers notice an effect within 10–15 minutes
+- Use daily for best results
+- Checkout is via WhatsApp
+
+HOW IT WORKS (3 steps):
+1. Choose your blend — pick the blend that matches what you're dealing with: congestion, poor sleep, or lack of focus
+2. Add to diffuser or apply — drop 3–5 drops in your diffuser, or for Focus Flow, roll directly onto your temples and wrists
+3. Feel the difference — most customers notice an effect within 10–15 minutes; use daily for best results
+
+--- END OF WEBSITE CONTENT ---
+
+Do not answer anything that is not covered by the above content. Do not make up ingredients, prices, benefits, usage instructions, or any other details.`;
+
+  let chatHistory = [];
+  let chatOpen = false;
+  let chatInitialised = false;
+
+  function toggleChat() {
+    chatOpen = !chatOpen;
+    document.getElementById('chatWindow').classList.toggle('open', chatOpen);
+    document.getElementById('chatFabIcon').textContent = chatOpen ? '×' : '🌿';
+    if (chatOpen && !chatInitialised) {
+      chatInitialised = true;
+      appendBotMessage('Hi! 👋 I\'m your PureRaiz assistant. Ask me anything about our oils — ingredients, how to use them, or which one suits you best!');
+    }
+    if (chatOpen) setTimeout(() => document.getElementById('chatInput').focus(), 300);
+  }
+
+  function appendBotMessage(text) {
+    const msgs = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg bot';
+    div.innerHTML = `<div class="chat-msg-avatar">🌿</div><div class="chat-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function appendUserMessage(text) {
+    const msgs = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg user';
+    div.innerHTML = `<div class="chat-bubble">${escHtml(text)}</div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function showTyping() {
+    const msgs = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg bot';
+    div.id = 'chatTyping';
+    div.innerHTML = `<div class="chat-msg-avatar">🌿</div><div class="chat-typing"><span></span><span></span><span></span></div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('chatTyping');
+    if (el) el.remove();
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    input.style.height = '';
+    document.getElementById('chatQuickBtns').style.display = 'none';
+    setInputDisabled(true);
+
+    appendUserMessage(text);
+    chatHistory.push({ role: 'user', content: text });
+    showTyping();
+
+    try {
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': window.location.href,
+          'X-Title': 'PureRaiz Assistant'
+        },
+        body: JSON.stringify({
+          model: CHAT_MODEL,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            ...chatHistory
+          ]
+        })
+      });
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content || 'Sorry, I couldn\'t get a response. Please try again!';
+      chatHistory.push({ role: 'assistant', content: reply });
+      removeTyping();
+      appendBotMessage(reply);
+    } catch {
+      removeTyping();
+      appendBotMessage('Oops! Something went wrong. Please try again or WhatsApp us at +601112345678. 😊');
+    }
+
+    setInputDisabled(false);
+    document.getElementById('chatInput').focus();
+  }
+
+  function setInputDisabled(disabled) {
+    document.getElementById('chatInput').disabled = disabled;
+    document.getElementById('chatSendBtn').disabled = disabled;
+  }
+
+  function sendQuick(text) {
+    document.getElementById('chatInput').value = text;
+    sendMessage();
+  }
+
+  function chatKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+  }
 </script>
 </body>
 </html>
